@@ -31,6 +31,10 @@ gpath_restlib = genpath(fullfile(rslib('Dir'), 'lib', 'RestLib'));
 gpath_restlib = rslib_clean_gpath(gpath_restlib);
 addpath(gpath_restlib);
 
+gpath_groupica = genpath(fullfile(rslib('Dir'), 'lib', 'GroupICA'));
+gpath_groupica = rslib_clean_gpath(gpath_groupica);
+addpath(gpath_groupica);
+
 gpath_weka = genpath(fullfile(rslib('Dir'), 'lib', 'Weka'));
 gpath_weka = rslib_clean_gpath(gpath_weka);
 addpath(gpath_weka);

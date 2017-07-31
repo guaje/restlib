@@ -49,8 +49,11 @@ icss_mode = '<icssMode/>';
 icss_run = 5;
 icss_min = 2;
 icss_max = 15;
+
 if isfield(job.ana, 'reg')
     ana_type = 1;
+elseif isfield(job.ana, 'mst')
+    ana_type = 3;
 elseif isfield(job.ana, 'icss')
     ana_type = 2;
     icss_mode = job.ana.icss.icss_mode;
@@ -59,31 +62,19 @@ elseif isfield(job.ana, 'icss')
     icss_max = job.ana.icss.icss_max;
 end
 
+workers = 4;
+
+if isfield(job.rmode, 'serial')
+    run_mode = 'serial';
+elseif isfield(job.rmode, 'paral')
+    run_mode = 'parallel';
+    workers = job.rmode.paral.nwork;
+end
+
 if isfield(job.mask, 'default_mask')
     maskFile = job.mask.default_mask;
 elseif isfield(job.mask, 'mask_file')
     maskFile = ['''', job.mask.mask_file{1, 1}, ''''];
-end
-
-std_sd = '<stdSD/>';
-std_stor = '<stdStor/>';
-std_prec = '<stdPrec/>';
-std_es = '<stdES/>';
-em_sd = '<emSD/>';
-em_prec = '<emPrec/>';
-
-em_maxiter = 1000;
-if isfield(job.pca_type, 'std')
-    pca_type = 1;
-    std_sd = job.pca_type.std.std_sd;
-    std_stor = job.pca_type.std.std_stor;
-    std_prec = job.pca_type.std.std_prec;
-    std_es = job.pca_type.std.std_es;
-elseif isfield(job.pca_type, 'em')
-    pca_type = 2;
-    em_sd = job.pca_type.em.em_sd;
-    em_prec = job.pca_type.em.em_prec;
-    em_maxiter = job.pca_type.em.em_maxiter;
 end
 
 gicat_file = fullfile(rslib('Dir'), 'parameters_templates', 'GroupICATemplate.m');
@@ -102,23 +93,25 @@ while 1
     modifiedStr = strrep(modifiedStr, '<icssRun/>', sprintf('%d', icss_run));
     modifiedStr = strrep(modifiedStr, '<icssMin/>', sprintf('%d', icss_min));
     modifiedStr = strrep(modifiedStr, '<icssMax/>', sprintf('%d', icss_max));
-    modifiedStr = strrep(modifiedStr, '<designMat/>', job.design_mat);
+    modifiedStr = strrep(modifiedStr, '<tr/>', sprintf('%e', job.tr));
+    modifiedStr = strrep(modifiedStr, '<gicaType/>', job.gicat);
+    modifiedStr = strrep(modifiedStr, '<parallelMode/>', run_mode);
+    modifiedStr = strrep(modifiedStr, '<parallelWorkers/>', sprintf('%d', workers));
+    modifiedStr = strrep(modifiedStr, '<perfType/>', sprintf('%d', job.perf_type));
     modifiedStr = strrep(modifiedStr, '<dirProcessedFiles/>', pf_dir);
     modifiedStr = strrep(modifiedStr, '<ext/>', ext);
     modifiedStr = strrep(modifiedStr, '<dirOutputFile/>', components_dir);
     modifiedStr = strrep(modifiedStr, '<prefix/>', prefix);
     modifiedStr = strrep(modifiedStr, '<maskFile/>', maskFile);
-    modifiedStr = strrep(modifiedStr, '<backRecon/>', sprintf('%d', job.back_recon));
+    modifiedStr = strrep(modifiedStr, '<backRecon/>', job.back_recon);
     modifiedStr = strrep(modifiedStr, '<preprocOpt/>', sprintf('%d', job.preproc_opt));
-    modifiedStr = strrep(modifiedStr, '<pcaType/>', sprintf('%d', pca_type));
-    modifiedStr = strrep(modifiedStr, '<stdSD/>', std_sd);
-    modifiedStr = strrep(modifiedStr, '<stdStor/>', std_stor);
-    modifiedStr = strrep(modifiedStr, '<stdPrec/>', std_prec);
-    modifiedStr = strrep(modifiedStr, '<stdES/>', std_es);
-    modifiedStr = strrep(modifiedStr, '<emSD/>', em_sd);
-    modifiedStr = strrep(modifiedStr, '<emPrec/>', em_prec);
-    modifiedStr = strrep(modifiedStr, '<emMaxIter/>', sprintf('%d', em_maxiter));
+    modifiedStr = strrep(modifiedStr, '<stdSD/>', job.std.std_sd);
+    modifiedStr = strrep(modifiedStr, '<stdStor/>', job.std.std_stor);
+    modifiedStr = strrep(modifiedStr, '<stdPrec/>', job.std.std_prec);
+    modifiedStr = strrep(modifiedStr, '<stdES/>', job.std.std_es);
+    modifiedStr = strrep(modifiedStr, '<reductionSteps/>', sprintf('%d', job.red_steps));
     modifiedStr = strrep(modifiedStr, '<numberComponents/>', sprintf('%d', job.ncomp));
+    modifiedStr = strrep(modifiedStr, '<scaleType/>', sprintf('%d', job.scale_type));
     fprintf(sgicat_fid, '%s\n', modifiedStr);
 end
 fclose(gicat_fid);

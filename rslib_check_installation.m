@@ -74,11 +74,11 @@ if ~exist('art.m', 'file')
 end
 
 % Check GoupICA installation
-if ~exist('groupica.m', 'file')
-    gpath_groupica = genpath(fullfile(rslib('Dir'), 'lib', 'GroupICA'));
-    gpath_groupica = rslib_clean_gpath(gpath_groupica);
-    addpath(gpath_groupica);
-end
+% if ~exist('groupica.m', 'file')
+%     gpath_groupica = genpath(fullfile(rslib('Dir'), 'lib', 'GroupICA'));
+%     gpath_groupica = rslib_clean_gpath(gpath_groupica);
+%     addpath(gpath_groupica);
+% end
 
 % Check NIFTI installation
 if ~exist('load_nii.m', 'file')

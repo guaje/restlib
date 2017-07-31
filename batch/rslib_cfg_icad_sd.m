@@ -66,7 +66,7 @@ icss         = cfg_branch;
 icss.name    = 'Group ICA using icasso';
 icss.tag     = 'icss';
 icss.val     = {icss_mode icss_run icss_min icss_max};
-icss.help    = {'Parameters for a standard PCA.'};
+icss.help    = {'Parameters for a group ICA using icasso.'};
 
 reg      = cfg_const;
 reg.name = 'Regular Group ICA';
@@ -74,30 +74,71 @@ reg.tag  = 'reg';
 reg.val  = {'1'};
 reg.help = {'Regular Group ICA.'};
 
+mst      = cfg_const;
+mst.name = 'Group ICA using MST';
+mst.tag  = 'mst';
+mst.val  = {'3'};
+mst.help = {'Group ICA using MST.'};
+
 ana        = cfg_choice;
 ana.name   = 'Analisys Type';
 ana.tag    = 'ana';
-ana.values = {reg icss};
+ana.values = {reg icss mst};
 ana.val    = {reg};
 ana.help   = {'Choose an analysis type.'};
 
-design_mat        = cfg_menu;
-design_mat.name   = 'Design Matrix Selection';
-design_mat.tag    = 'design_mat';
-design_mat.values = {'no', ...
-                     'same_sub_same_sess', ...
-                     'same_sub_diff_sess', ...
-                     'diff_sub_diff_sess'};
-design_mat.labels = {'No design matrix', ...
-                     'Same design over subjects and sessions', ...
-                     'Same design matrix for subjects but different over sessions', ...
-                     'One design matrix per subject'};
-design_mat.val    = {'no'};
-design_mat.help   = {['Design matrix (SPM.mat) is used for sorting '...
-                      'the components temporally (time courses) '...
-                      'during display. Design matrix will not be '...
-                      'used during the analysis stage except for '...
-                      'SEMI-BLIND ICA.']};
+tr         = cfg_entry;
+tr.name    = 'Repetition Time';
+tr.tag     = 'tr';
+tr.strtype = 'r';
+tr.val     = {2.00};
+tr.num     = [1 1];
+tr.help    = {'Input the repetition time in seconds.'};
+
+gicat        = cfg_menu;
+gicat.name   = 'Group ICA Type';
+gicat.tag    = 'gicat';
+gicat.values = {'spatial' 'temporal'};
+gicat.labels = {'Spatial' 'Temporal'};
+gicat.val    = {'spatial'};
+gicat.help   = {'Choose a Group ICA Type.'};
+
+nwork         = cfg_entry;
+nwork.name    = 'Number of Workers';
+nwork.tag     = 'nwork';
+nwork.strtype = 'i';
+nwork.val     = {4};
+nwork.num     = [1 1];
+nwork.help    = {'Number of workers to do job in parallel.'};
+
+paral         = cfg_branch;
+paral.name    = 'Parallel';
+paral.tag     = 'paral';
+paral.val     = {nwork};
+paral.help    = {'Parameters for a group ICA using icasso.'};
+
+serial      = cfg_const;
+serial.name = 'Serial';
+serial.tag  = 'serial';
+serial.val  = {'serial'};
+serial.help = {'Regular Group ICA.'};
+
+rmode        = cfg_choice;
+rmode.name   = 'Running Mode';
+rmode.tag    = 'rmode';
+rmode.values = {paral serial};
+rmode.val    = {paral};
+rmode.help   = {'Choose a running mode.'};
+
+perf_type          = cfg_menu;
+perf_type.name     = 'Performance Type';
+perf_type.tag      = 'perf_type';
+perf_type.values   = {1 2 3};
+perf_type.labels   = {'Maximize Performance', ...
+                      'Less Memory Usage', ...
+                      'User Specified Settings'};
+perf_type.val      = {1};
+perf_type.help     = {'Choose a performance type.'};
                   
 imgs         = cfg_files;
 imgs.name    = 'Processed Files';
@@ -148,10 +189,10 @@ mask.help   = {'Choose a mask option.'};
 back_recon        = cfg_menu;
 back_recon.name   = 'Back Reconstruction Type';
 back_recon.tag    = 'back_recon';
-back_recon.values = {1 2};
-back_recon.labels = {'Regular', ...
+back_recon.values = {'gica' 'str'};
+back_recon.labels = {'GICA', ...
                      'Spatial-temporal Regression'};
-back_recon.val    = {1};
+back_recon.val    = {'gica'};
 back_recon.help   = {'Choose a back reconstruction type.'};
 
 preproc_opt        = cfg_menu;
@@ -198,47 +239,18 @@ std_es.val    = {'selective'};
 std_es.help   = {'Choose an option.'};
 
 std         = cfg_branch;
-std.name    = 'Standard';
+std.name    = 'PCA Options';
 std.tag     = 'std';
 std.val     = {std_sd std_stor std_prec std_es};
-std.help    = {'Parameters for a standard PCA.'};
+std.help    = {'Parameters for PCA.'};
 
-em_sd        = cfg_menu;
-em_sd.name   = 'Stack Data';
-em_sd.tag    = 'em_sd';
-em_sd.values = {'yes' 'no'};
-em_sd.labels = {'Yes' 'No'};
-em_sd.val    = {'yes'};
-em_sd.help   = {'Choose an option.'};
-
-em_prec        = cfg_menu;
-em_prec.name   = 'Precision';
-em_prec.tag    = 'em_prec';
-em_prec.values = {'double' 'single'};
-em_prec.labels = {'Double' 'Single'};
-em_prec.val    = {'single'};
-em_prec.help   = {'Choose an option.'};
-
-em_maxiter         = cfg_entry;
-em_maxiter.name    = 'Maximum Number of Iterations';
-em_maxiter.tag     = 'em_maxiter';
-em_maxiter.strtype = 'e';
-em_maxiter.val     = {1000};
-em_maxiter.num     = [1 1];
-em_maxiter.help    = {'Enter the maximum number of iterations.'};
-
-em         = cfg_branch;
-em.name    = 'Expectation Maximization';
-em.tag     = 'em';
-em.val     = {em_sd em_prec em_maxiter};
-em.help    = {'Parameters for an Expectation Maximization PCA.'};
-
-pca_type        = cfg_choice;
-pca_type.name   = 'PCA Type';
-pca_type.tag    = 'pca_type';
-pca_type.values = {std em};
-pca_type.val    = {std};
-pca_type.help   = {'Choose a back reconstruction type.'};
+red_steps          = cfg_menu;
+red_steps.name     = 'Reduction Steps';
+red_steps.tag      = 'red_steps';
+red_steps.values   = {1 2};
+red_steps.labels   = {'1', '2'};
+red_steps.val      = {2};
+red_steps.help     = {'Choose a number of reduction steps.'};
 
 ncomp         = cfg_entry;
 ncomp.name    = 'Number of Components';
@@ -248,13 +260,30 @@ ncomp.val     = {30};
 ncomp.num     = [1 1];
 ncomp.help    = {'Number of components to be computed.'};
 
+scale_type          = cfg_menu;
+scale_type.name     = 'Scale Type';
+scale_type.tag      = 'scale_type';
+scale_type.values   = {0 1 2 3 4};
+scale_type.labels   = {'Don''t scale', ...
+                       'Scale to Percent signal change', ...
+                       'Scale to Z scores', ...
+                       ['Normalize spatial maps using the maximum ', ...
+                       'intensity value and multiply timecourses ', ...
+                       'using the maximum intensity value'], ...
+                       ['Scale timecourses using the maximum ', ...
+                       'intensity value and spatial maps using the ', ...
+                       'standard deviation of timecourses']};
+scale_type.val      = {1};
+scale_type.help     = {'Choose a scale type.'};
+
 %% Executable Branch
 
 spatial_decomposition      = cfg_exbranch;
 spatial_decomposition.name = 'Spatial Decomposition';
 spatial_decomposition.tag  = 'rslib_cfg_icad_sd';
-spatial_decomposition.val  = {modal ana design_mat imgs icap prfx mask ...
-                              back_recon preproc_opt pca_type ncomp};
+spatial_decomposition.val  = {modal ana tr gicat rmode perf_type imgs ...
+                              icap prfx mask back_recon preproc_opt std ...
+                              red_steps ncomp scale_type};
 spatial_decomposition.prog = @rslib_run_icad_sd;
 spatial_decomposition.vout = @vout_data;
 %spatial_decomposition.check = @check_data;
